@@ -15,6 +15,7 @@ const bot = new Telegraf(envs.BOT_TOKEN);
 
 // para capturar el id del usuari
 let Idtelegram: number | null = null;
+let usuarioConIdIdentificado = undefined;
 
 // Manejador de comandos al iniciar el bot
 bot.command('start', async (ctx) => {
@@ -22,7 +23,7 @@ bot.command('start', async (ctx) => {
 	// Variable para capturar el ID del usuario
 	Idtelegram = ctx.from.id;
 
-	const usuarioConIdIdentificado = await buscarIdTelegram(Idtelegram);
+	usuarioConIdIdentificado = await buscarIdTelegram(Idtelegram);
 
 	if (usuarioConIdIdentificado) {
 		await ctx.reply(`Bienvenido ${usuarioConIdIdentificado.nombre_corto}`);
@@ -35,33 +36,36 @@ bot.command('start', async (ctx) => {
 
 });
 
-// Manejador de eventos de texto
-bot.on('text', async (ctx) => {
+if (usuarioConIdIdentificado) {
+	// Manejador de eventos de texto
+	bot.on('text', async (ctx) => {
 
-	if (Idtelegram === null) {
-		// Si el ID de Telegram no se ha capturado, salir
-		return;
-	}
-
-	const cedula = ctx.message.text;
-
-	try {
-		// Buscar al usuario por su número de cédula
-		const usuario = await buscarJugador(cedula);
-
-		if (usuario) {
-			// Si se encuentra al usuario, registrar su ID de Telegram y dar la bienvenida
-			await registrarIdTelegram(ctx, usuario);
-			mostrarMenu(ctx);
-		} else {
-			// Si el usuario no se encuentra, informar al usuario
-			await ctx.reply("El número de cédula no coincide con ningún usuario. Por favor, comunícate con el administrador.");
+		if (Idtelegram === null) {
+			// Si el ID de Telegram no se ha capturado, salir
+			return;
 		}
-	} catch (error) {
-		// Manejar el error
-		await ctx.reply('Ocurrió un error al buscar el usuario por número de cédula. Por favor, comunícate con el administrador.');
-	}
-});
+
+		const cedula = ctx.message.text;
+
+		try {
+			// Buscar al usuario por su número de cédula
+			const usuario = await buscarJugador(cedula);
+
+			if (usuario) {
+				// Si se encuentra al usuario, registrar su ID de Telegram y dar la bienvenida
+				await registrarIdTelegram(ctx, usuario);
+				mostrarMenu(ctx);
+			} else {
+				// Si el usuario no se encuentra, informar al usuario
+				await ctx.reply("El número de cédula no coincide con ningún usuario. Por favor, comunícate con el administrador.");
+			}
+		} catch (error) {
+			// Manejar el error
+			await ctx.reply('Ocurrió un error al buscar el usuario por número de cédula. Por favor, comunícate con el administrador.');
+		}
+	});
+}
+
 
 // Función para buscar al usuario por su ID de Telegram
 async function buscarIdTelegram(IdTelegram: number | null) {
@@ -191,7 +195,7 @@ bot.action(/^cancelar_(\d+)_(\d+)$/, async (ctx: any) => {
 
 	const { numero_registros } = (await axios.delete(`${envs.URL_API}/partido_jugadores/delete_id_jugador_id_partido/${id}/${partidoId}`)).data;
 
-	numero_registros > 0 ? ctx.reply("Asistencia Cancelada"): ctx.reply("No esta registrado en este partido");
+	numero_registros > 0 ? ctx.reply("Asistencia Cancelada") : ctx.reply("No esta registrado en este partido");
 
 
 });
