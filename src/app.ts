@@ -204,16 +204,21 @@ bot.action(/^cancelar_(\d+)_(\d+)$/, async (ctx: any) => {
 bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 
 	const partidoId = ctx.match[2];
+	const partido = (await axios.get(`${envs.URL_API}/partidos/${partidoId}`)).data;
 	const listadoJugadores = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadores_idpartido/${partidoId}`)).data;
 
 	// Crear un mensaje con los nombres de los jugadores
-    let mensaje = `Listado de jugadores:\n`;
+    let mensaje = `*Listado de jugadores Partido:*
+	*Fecha: ${partido.fecha}*
+	*Lugar ${partido.lugar}*
+	*Lugar ${partido.hora}*
+	------------------------\n`;
     listadoJugadores.forEach((jugador: any, i:number) => {
         mensaje += `${i+1}. ${jugador.nombre_corto}\n`;
     });
 
     // Enviar el mensaje como respuesta
-    await ctx.reply(mensaje);
+    await ctx.replyWithMarkdown(mensaje);
 
 });
 
