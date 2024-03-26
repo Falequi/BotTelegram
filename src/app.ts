@@ -208,8 +208,8 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 
 	// Crear un mensaje con los nombres de los jugadores
     let mensaje = `Listado de jugadores:\n`;
-    listadoJugadores.forEach((jugador: any) => {
-        mensaje += `${jugador.nombre_corto}\n`;
+    listadoJugadores.forEach((jugador: any, i:number) => {
+        mensaje += `${i+1}. ${jugador.nombre_corto}\n`;
     });
 
     // Enviar el mensaje como respuesta
