@@ -156,7 +156,8 @@ bot.action(/^partido_(\d+)$/, async (ctx) => {
 	const inlineKeyboard: InlineKeyboardMarkup = {
 		inline_keyboard: [
 			[{ text: "Registrarse", callback_data: `registrarse_${ctx.from!.id}_${partidoId}` }],
-			[{ text: "Cancelar", callback_data: `cancelar_${ctx.from!.id}_${partidoId}` }]
+			[{ text: "Cancelar Asistencia", callback_data: `cancelar_${ctx.from!.id}_${partidoId}` }],
+			[{ text: "Ver Lista Jugadores", callback_data: `lista_${ctx.from!.id}_${partidoId}` }]
 		]
 	};
 
@@ -197,6 +198,22 @@ bot.action(/^cancelar_(\d+)_(\d+)$/, async (ctx: any) => {
 
 	numero_registros > 0 ? ctx.reply("Asistencia Cancelada") : ctx.reply("No esta registrado en este partido");
 
+
+});
+
+bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
+
+	const partidoId = ctx.match[2];
+	const listadoJugadores = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadores_idpartido/${partidoId}`)).data;
+
+	// Crear un mensaje con los nombres de los jugadores
+    let mensaje = `Listado de jugadores:\n`;
+    listadoJugadores.forEach((jugador: any) => {
+        mensaje += `${jugador.nombre_corto}\n`;
+    });
+
+    // Enviar el mensaje como respuesta
+    await ctx.reply(mensaje);
 
 });
 
