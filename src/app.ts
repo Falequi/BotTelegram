@@ -36,7 +36,7 @@ bot.command('start', async (ctx) => {
 
 });
 
-if (usuarioConIdIdentificado) {
+if (!usuarioConIdIdentificado) {
 	// Manejador de eventos de texto
 	bot.on('text', async (ctx) => {
 
