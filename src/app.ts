@@ -13,7 +13,7 @@ interface Partidos {
 // Crea una nueva instancia de Telegraf
 const bot = new Telegraf(envs.BOT_TOKEN);
 
-// para capturar el id del usuari
+// para capturar el id del usuario
 let Idtelegram: number | null = null;
 let usuarioConIdIdentificado = undefined;
 
@@ -173,6 +173,7 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 
 	const jugadorIdTelegram = ctx.match[1];
 	const partidoId = ctx.match[2];
+	const listadoJugadores = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadores_idpartido/${partidoId}`)).data;
 	const { id } = (await axios.get(`${envs.URL_API}/jugadores/jugadoridteletram/"${jugadorIdTelegram}"`)).data;
 
 	try {
@@ -184,7 +185,9 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 			"id_partido": parseInt(partidoId),
 			"equipo": "",
 		});
-		await ctx.reply("ha sido registrado con exito");
+		(listadoJugadores.length < 10)
+			? await ctx.reply("Ha sido registrado con exito")
+			: await ctx.reply(`Ha sido registrado en *reserva*, Ya que estan registrados ${listadoJugadores.length} Jugadores`);
 	}
 });
 
@@ -213,9 +216,13 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 	*Lugar ${partido.lugar}*
 	*Lugar ${partido.hora}*
 	------------------------\n`;
-    listadoJugadores.forEach((jugador: any, i:number) => {
-        mensaje += `${i+1}. ${jugador.nombre_corto}\n`;
-    });
+    listadoJugadores.forEach((jugador: any, i: number) => {
+		(i < 10)
+			? mensaje += `${i + 1}. ${jugador.nombre_corto}\n`
+			: mensaje += `------------------------
+		*reserva*
+		${i + 1}. ${jugador.nombre_corto}\n`;
+	});
 
     // Enviar el mensaje como respuesta
     await ctx.replyWithMarkdown(mensaje);
