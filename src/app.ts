@@ -185,7 +185,7 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 			"id_partido": parseInt(partidoId),
 			"equipo": "",
 		});
-		(listadoJugadores.length < 10)
+		(listadoJugadores.length < 27)
 			? await ctx.reply("Ha sido registrado con exito")
 			: await ctx.reply(`Ha sido registrado en *reserva*, Ya que estan registrados ${listadoJugadores.length} Jugadores`);
 	}
