@@ -189,6 +189,10 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 			? await ctx.reply("Ha sido registrado con exito")
 			: await ctx.reply(`Ha sido registrado en *reserva*, Ya que estan registrados ${listadoJugadores.length} Jugadores`);
 	}
+
+	// Notificar al usuario con ID 646386747 sobre el nuevo registro
+	const mensajeNotificacion = `¡Nueva inscripción en el partido!\nJugador ID: ${id}\nPartido ID: ${partidoId}`;
+	await bot.telegram.sendMessage("646386747", mensajeNotificacion);
 });
 
 bot.action(/^cancelar_(\d+)_(\d+)$/, async (ctx: any) => {
@@ -201,6 +205,9 @@ bot.action(/^cancelar_(\d+)_(\d+)$/, async (ctx: any) => {
 
 	numero_registros > 0 ? ctx.reply("Asistencia Cancelada") : ctx.reply("No esta registrado en este partido");
 
+	// Notificar al usuario con ID 646386747 sobre el nuevo registro
+	const mensajeNotificacion = `¡Nueva Cancelacion en el partido!\nJugador ID: ${id}\nPartido ID: ${partidoId}`;
+	await bot.telegram.sendMessage("646386747", mensajeNotificacion);
 
 });
 
