@@ -16,6 +16,7 @@ const bot = new Telegraf(envs.BOT_TOKEN);
 // para capturar el id del usuario
 let Idtelegram: number | null = null;
 let usuarioConIdIdentificado = undefined;
+let usuario = undefined;
 
 // Manejador de comandos al iniciar el bot
 bot.command('start', async (ctx) => {
@@ -49,7 +50,7 @@ if (!usuarioConIdIdentificado) {
 
 		try {
 			// Buscar al usuario por su número de cédula
-			const usuario = await buscarJugador(cedula);
+			usuario = await buscarJugador(cedula);
 
 			if (usuario) {
 				// Si se encuentra al usuario, registrar su ID de Telegram y dar la bienvenida
@@ -78,7 +79,7 @@ async function buscarIdTelegram(IdTelegram: number | null) {
 
 // Función para buscar al usuario por su número de cédula
 async function buscarJugador(cedula: string) {
-	const usuario = (await axios.get(`${envs.URL_API}/jugadores/jugadorporcedula/${cedula}`)).data;
+	usuario = (await axios.get(`${envs.URL_API}/jugadores/jugadorporcedula/${cedula}`)).data;
 	return usuario;
 }
 
@@ -224,7 +225,7 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 	*Lugar ${partido.hora}*
 	------------------------\n`;
     listadoJugadores.forEach((jugador: any, i: number) => {
-		(i < 10)
+		(i < 27)
 			? mensaje += `${i + 1}. ${jugador.nombre_corto}\n`
 			: mensaje += `------------------------
 		*reserva*
