@@ -136,7 +136,7 @@ bot.action('verPartidos', async ctx => {
 			const fechaPartido = new Date(fecha);
 			const diaSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 			const dia = fechaPartido.getDate() + 1;
-			const diaNombre = diaSemana[fechaPartido.getDay() + 1];
+			const diaNombre = diaSemana[fechaPartido.getDay()];
 			return [
 				Markup.button.callback(
 					`Fecha: ${diaNombre} ${dia} Lugar: ${lugar} Hora: ${hora}`,
