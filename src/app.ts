@@ -70,9 +70,11 @@ if (!usuarioConIdIdentificado) {
 
 // Función para buscar al usuario por su ID de Telegram
 async function buscarIdTelegram(IdTelegram: number | null) {
+
 	if (IdTelegram === null) {
 		return null;
 	}
+
 	const usuario = (await axios.get(`${envs.URL_API}/jugadores/jugadoridteletram/"${IdTelegram}"`)).data;
 	return usuario;
 }
@@ -132,9 +134,9 @@ bot.action('verPartidos', async ctx => {
 		partidosFuturos.map(partido => {
 			const { id, fecha, lugar, hora } = partido;
 			const fechaPartido = new Date(fecha);
-			const diaSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+			const diaSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 			const dia = fechaPartido.getDate() + 1;
-			const diaNombre = diaSemana[fechaPartido.getDay()];
+			const diaNombre = diaSemana[fechaPartido.getDay() + 1];
 			return [
 				Markup.button.callback(
 					`Fecha: ${diaNombre} ${dia} Lugar: ${lugar} Hora: ${hora}`,
@@ -219,12 +221,12 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 	const listadoJugadores = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadores_idpartido/${partidoId}`)).data;
 
 	// Crear un mensaje con los nombres de los jugadores
-    let mensaje = `*Listado de jugadores Partido:*
+	let mensaje = `*Listado de jugadores Partido:*
 	*Fecha: ${partido.fecha}*
 	*Lugar ${partido.lugar}*
 	*Lugar ${partido.hora}*
 	------------------------\n`;
-    listadoJugadores.forEach((jugador: any, i: number) => {
+	listadoJugadores.forEach((jugador: any, i: number) => {
 		(i < 27)
 			? mensaje += `${i + 1}. ${jugador.nombre_corto}\n`
 			: mensaje += `------------------------
@@ -232,8 +234,8 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 		${i + 1}. ${jugador.nombre_corto}\n`;
 	});
 
-    // Enviar el mensaje como respuesta
-    await ctx.replyWithMarkdown(mensaje);
+	// Enviar el mensaje como respuesta
+	await ctx.replyWithMarkdown(mensaje);
 
 });
 
