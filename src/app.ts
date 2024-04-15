@@ -177,6 +177,7 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 	const currentDate = new Date();
 	const jugadorIdTelegram = ctx.match[1];
 	const partidoId = ctx.match[2];
+	const {fecha} = (await axios.get(`${envs.URL_API}/partido/${partidoId}`)).data;
 	const listadoJugadores = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadores_idpartido/${partidoId}`)).data;
 	const { id, nombre_corto } = (await axios.get(`${envs.URL_API}/jugadores/jugadoridteletram/"${jugadorIdTelegram}"`)).data;
 
@@ -184,7 +185,7 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 		await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadore_idjugador_idpartido/${id}/${partidoId}`)
 		await ctx.reply("ya esta registrado");
 	} catch (error) {
-		if (partidoId.fecha > currentDate) {
+		if (new Date(fecha) > currentDate) {
 			await axios.post(`${envs.URL_API}/partido_jugadores/create_idjugador_idpartido`, {
 				"id_jugador": parseInt(id),
 				"id_partido": parseInt(partidoId),
