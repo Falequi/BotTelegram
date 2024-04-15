@@ -177,7 +177,7 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 	const jugadorIdTelegram = ctx.match[1];
 	const partidoId = ctx.match[2];
 	const listadoJugadores = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadores_idpartido/${partidoId}`)).data;
-	const { id } = (await axios.get(`${envs.URL_API}/jugadores/jugadoridteletram/"${jugadorIdTelegram}"`)).data;
+	const { id, nombre_corto } = (await axios.get(`${envs.URL_API}/jugadores/jugadoridteletram/"${jugadorIdTelegram}"`)).data;
 
 	try {
 		await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadore_idjugador_idpartido/${id}/${partidoId}`)
@@ -194,7 +194,7 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 	}
 
 	// Notificar al usuario con ID 646386747 sobre el nuevo registro
-	const mensajeNotificacion = `¡Nueva inscripción en el partido!\nJugador ID: ${id}\nPartido ID: ${partidoId}`;
+	const mensajeNotificacion = `¡Nueva inscripción en el partido!\nPartido ID: ${partidoId}\nJugador: ${nombre_corto}`;
 	await bot.telegram.sendMessage("646386747", mensajeNotificacion);
 });
 
@@ -202,14 +202,14 @@ bot.action(/^cancelar_(\d+)_(\d+)$/, async (ctx: any) => {
 
 	const jugadorIdTelegram = ctx.match[1];
 	const partidoId = ctx.match[2];
-	const { id } = (await axios.get(`${envs.URL_API}/jugadores/jugadoridteletram/"${jugadorIdTelegram}"`)).data;
+	const { id, nombre_corto } = (await axios.get(`${envs.URL_API}/jugadores/jugadoridteletram/"${jugadorIdTelegram}"`)).data;
 
 	const { numero_registros } = (await axios.delete(`${envs.URL_API}/partido_jugadores/delete_id_jugador_id_partido/${id}/${partidoId}`)).data;
 
 	numero_registros > 0 ? ctx.reply("Asistencia Cancelada") : ctx.reply("No esta registrado en este partido");
 
 	// Notificar al usuario con ID 646386747 sobre el nuevo registro
-	const mensajeNotificacion = `¡Nueva Cancelacion en el partido!\nJugador ID: ${id}\nPartido ID: ${partidoId}`;
+	const mensajeNotificacion = `¡Nueva Cancelacion en el partido!\nPartido ID: ${partidoId}\nJugador: ${nombre_corto}`;
 	await bot.telegram.sendMessage("646386747", mensajeNotificacion);
 
 });
