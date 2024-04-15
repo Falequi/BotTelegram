@@ -185,7 +185,7 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 		await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadore_idjugador_idpartido/${id}/${partidoId}`)
 		await ctx.reply("ya esta registrado");
 	} catch (error) {
-		if (new Date(fecha) > currentDate) {
+		// if (new Date(fecha) > currentDate) {
 			await axios.post(`${envs.URL_API}/partido_jugadores/create_idjugador_idpartido`, {
 				"id_jugador": parseInt(id),
 				"id_partido": parseInt(partidoId),
@@ -194,9 +194,9 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 			(listadoJugadores.length < 27)
 				? await ctx.reply("Ha sido registrado con exito")
 				: await ctx.reply(`Ha sido registrado en *reserva*, Ya que estan registrados ${listadoJugadores.length} Jugadores`);
-		}
-		else
-			ctx.reply(`El partido que hace referencia ya paso por favor digita /start para buscar un partido vigente`)
+		// }
+		// else
+		// 	ctx.reply(`El partido que hace referencia ya paso por favor digita /start para buscar un partido vigente`)
 
 	}
 
