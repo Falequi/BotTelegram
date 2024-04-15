@@ -174,10 +174,10 @@ bot.action(/^partido_(\d+)$/, async (ctx) => {
 
 bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 
-	//const currentDate = new Date();
+	const currenDate = new Date();
 	const jugadorIdTelegram = ctx.match[1];
 	const partidoId = ctx.match[2];
-	//const {fecha} = (await axios.get(`${envs.URL_API}/partido/${partidoId}`)).data;
+	const partido = (await axios.get(`${envs.URL_API}/partidos/${partidoId}`)).data;
 	const listadoJugadores = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadores_idpartido/${partidoId}`)).data;
 	const { id, nombre_corto } = (await axios.get(`${envs.URL_API}/jugadores/jugadoridteletram/"${jugadorIdTelegram}"`)).data;
 
@@ -185,6 +185,7 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 		await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadore_idjugador_idpartido/${id}/${partidoId}`)
 		await ctx.reply("ya esta registrado");
 	} catch (error) {
+		if (new Date(partido.fecha) > currenDate) {
 			await axios.post(`${envs.URL_API}/partido_jugadores/create_idjugador_idpartido`, {
 				"id_jugador": parseInt(id),
 				"id_partido": parseInt(partidoId),
@@ -193,11 +194,15 @@ bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 			(listadoJugadores.length < 27)
 				? await ctx.reply("Ha sido registrado con exito")
 				: await ctx.reply(`Ha sido registrado en *reserva*, Ya que estan registrados ${listadoJugadores.length} Jugadores`);
+
+			// Notificar al usuario con ID 646386747 sobre el nuevo registro
+			const mensajeNotificacion = `¡Nueva inscripción en el partido!\nPartido ID: ${partidoId}\nJugador: ${nombre_corto}`;
+			await bot.telegram.sendMessage("646386747", mensajeNotificacion);
+		} else {
+			await ctx.reply(`Este partido ya paso, por favor vuelve a digitar /start y revisa los partidos disponibles`);
+		}
 	}
 
-	// Notificar al usuario con ID 646386747 sobre el nuevo registro
-	const mensajeNotificacion = `¡Nueva inscripción en el partido!\nPartido ID: ${partidoId}\nJugador: ${nombre_corto}`;
-	await bot.telegram.sendMessage("646386747", mensajeNotificacion);
 });
 
 bot.action(/^cancelar_(\d+)_(\d+)$/, async (ctx: any) => {
