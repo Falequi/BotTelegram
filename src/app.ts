@@ -241,6 +241,10 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 		${i + 1}. ${jugador.nombre_corto}\n`;
 	});
 
+	mensaje += `------------------------\n
+	🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\nSe debe cancelar $18.000. \n🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\nBancolombia\n*Número de Cuenta\n7568741624\nAhorros\nFabio Alejandro Quintero\nCédula 4.375.857*\n*Nequi*\nPSE Nequi: https://recarga.nequi.com.co\nTeléfono: 3188216823
+	---------------------------`
+
 	// Enviar el mensaje como respuesta
 	await ctx.replyWithMarkdown(mensaje);
 
