@@ -160,7 +160,7 @@ bot.action(/^partido_(\d+)$/, async (ctx) => {
 		inline_keyboard: [
 			[{ text: "Registrarse", callback_data: `registrarse_${ctx.from!.id}_${partidoId}` }],
 			[{ text: "Cancelar Asistencia", callback_data: `cancelar_${ctx.from!.id}_${partidoId}` }],
-			[{ text: "Ver Lista Jugadores", callback_data: `lista_${ctx.from!.id}_${partidoId}` }]
+			[{ text: "Ver Lista Jugadores", callback_data: `lista_${ctx.from!.id}_${partidoId}` }],
 		]
 	};
 
@@ -247,6 +247,79 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 
 	// Enviar el mensaje como respuesta
 	await ctx.replyWithMarkdown(mensaje);
+
+});
+
+bot.action(/^registro_pago_(\d+)_(\d+)$/, async (ctx: any) => {
+
+	const partidoId = ctx.match[2];
+	
+	const listadoJugadores = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadores_idpartido/${partidoId}`)).data;
+
+	const inlineKeyboard = {
+		inline_keyboard: listadoJugadores
+			.filter((jugador: any) => jugador.socio === false && jugador.estado_pago === false)
+			.map((jugador: any) => [
+				{
+					text: `${jugador.nombre_corto}`,
+					callback_data: `gestion_pago_${jugador.id}_${partidoId}`
+				}
+			])
+	};
+
+	const menu = JSON.stringify(inlineKeyboard);
+	// const menujson = JSON.parse(menu)
+	//Crear un teclado inline con las opciones "Registrarse" y "Cancelar"
+
+	await ctx.reply(`Selecciona el Jugador:`, { reply_markup: menu });
+});
+
+bot.action(/^gestion_pago_(\d+)_(\d+)$/, async (ctx: any) => {
+
+	const partidoId = ctx.match[2];
+	const jugadorId = ctx.match[1];
+
+	// Crear un teclado inline con las opciones "Registrarse" y "Cancelar"
+	const inlineKeyboard = {
+		inline_keyboard: [
+			[{ text: "Registrar Pago", callback_data: `registrar_pago_${jugadorId}_${partidoId}` }],
+			[{ text: "Cancelar Pago", callback_data: `cancelar_pago_${jugadorId}_${partidoId}` }],
+		]
+	};
+
+	await ctx.reply(`Seleccion la accion:`, { reply_markup: inlineKeyboard });
+
+});
+
+bot.action(/^registrar_pago_(\d+)_(\d+)$/, async (ctx: any) => {
+
+	const partidoId = ctx.match[2];
+	const jugadorId = ctx.match[1];
+
+	const {id} = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadore_idjugador_idpartido/${jugadorId}/${partidoId}`)).data
+
+	try {
+		await axios.put(`${envs.URL_API}/partido_jugadores/${id}`,{"estado_pago":true})
+		ctx.reply("El pago ha sido registrado con exito")
+	} catch (error) {
+		await ctx.reply("Hubo un error al registrar el pago")
+	}
+
+});
+
+bot.action(/^cancelar_pago_(\d+)_(\d+)$/, async (ctx: any) => {
+
+	const partidoId = ctx.match[2];
+	const jugadorId = ctx.match[1];
+
+	const {id} = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadore_idjugador_idpartido/${jugadorId}/${partidoId}`)).data
+
+	try {
+		await axios.put(`${envs.URL_API}/partido_jugadores/${id}`,{"estado_pago":false})
+		ctx.reply("El pago ha sido cancelado con exito")
+	} catch (error) {
+		await ctx.reply("Hubo un error al cancelar el pago")
+	}
 
 });
 
