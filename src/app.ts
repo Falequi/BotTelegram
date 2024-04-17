@@ -2,21 +2,38 @@ import { Telegraf, Context, Markup } from 'telegraf'; // Importa Context de tele
 import axios from 'axios';
 import { envs } from "./config/envs";
 import { InlineKeyboardMarkup } from 'telegraf/typings/core/types/typegram';
+import { mostrarMenu, buscarIdTelegram, buscarJugador, registrarIdTelegram } from './functions';
 
-interface Partidos {
+interface Partido {
 	id: number,
 	fecha: string,
 	lugar: string,
 	hora: string
 }
+interface Jugador {
+	id: number,
+	nombres: string,
+	apellidos: string,
+	nombre_corto: string,
+	cedula: string,
+	RH: string,
+	telefono: string,
+	email: string,
+	talla_camiseta: string,
+	fecha_nacimiento: string,
+	estado: Boolean,
+	tipo: string,
+	id_telegram: string
+}
 
 // Crea una nueva instancia de Telegraf
 const bot = new Telegraf(envs.BOT_TOKEN);
 
-// para capturar el id del usuario
+/// capturas globales
 let Idtelegram: number | null = null;
-let usuarioConIdIdentificado = undefined;
-let usuario = undefined;
+let jugador: Jugador | undefined = undefined;
+let partidos: Partido[] | any = undefined;
+let partido: Partido | any = undefined;
 
 // Manejador de comandos al iniciar el bot
 bot.command('start', async (ctx) => {
@@ -24,11 +41,11 @@ bot.command('start', async (ctx) => {
 	// Variable para capturar el ID del usuario
 	Idtelegram = ctx.from.id;
 
-	usuarioConIdIdentificado = await buscarIdTelegram(Idtelegram);
+	jugador = await buscarIdTelegram(Idtelegram);
 
-	if (usuarioConIdIdentificado) {
-		await ctx.reply(`Bienvenido ${usuarioConIdIdentificado.nombre_corto}`);
-		mostrarMenu(ctx);
+	if (jugador) {
+		await ctx.reply(`Bienvenido ${jugador.nombre_corto}`);
+		mostrarMenu(ctx, bot);
 	}
 	else {
 		// Si el usuario no se encuentra, pide al usuario que ingrese su número de cédula
@@ -37,7 +54,7 @@ bot.command('start', async (ctx) => {
 
 });
 
-if (!usuarioConIdIdentificado) {
+if (!jugador) {
 	// Manejador de eventos de texto
 	bot.on('text', async (ctx) => {
 
@@ -50,12 +67,12 @@ if (!usuarioConIdIdentificado) {
 
 		try {
 			// Buscar al usuario por su número de cédula
-			usuario = await buscarJugador(cedula);
+			jugador = await buscarJugador(cedula);
 
-			if (usuario) {
+			if (jugador) {
 				// Si se encuentra al usuario, registrar su ID de Telegram y dar la bienvenida
-				await registrarIdTelegram(ctx, usuario);
-				mostrarMenu(ctx);
+				await registrarIdTelegram(ctx, jugador, Idtelegram);
+				mostrarMenu(ctx, bot);
 			} else {
 				// Si el usuario no se encuentra, informar al usuario
 				await ctx.reply("El número de cédula no coincide con ningún usuario. Por favor, comunícate con el administrador.");
@@ -68,62 +85,15 @@ if (!usuarioConIdIdentificado) {
 }
 
 
-// Función para buscar al usuario por su ID de Telegram
-async function buscarIdTelegram(IdTelegram: number | null) {
 
-	if (IdTelegram === null) {
-		return null;
-	}
-
-	const usuario = (await axios.get(`${envs.URL_API}/jugadores/jugadoridteletram/"${IdTelegram}"`)).data;
-	return usuario;
-}
-
-// Función para buscar al usuario por su número de cédula
-async function buscarJugador(cedula: string) {
-	usuario = (await axios.get(`${envs.URL_API}/jugadores/jugadorporcedula/${cedula}`)).data;
-	return usuario;
-}
-
-// Función para registrar el ID de Telegram del usuario
-async function registrarIdTelegram(ctx: Context, usuario: any) {
-
-	await axios.put(`${envs.URL_API}/jugadores/${usuario.id}`, { "id_telegram": `"${Idtelegram}"` })
-	// Realiza la acción de registro aquí
-	await ctx.reply(`Bienvenido ${usuario.nombre_corto}`);
-	// Aquí puedes registrar el ID de Telegram del usuario si es necesario
-}
-
-// Función para mostrar el menú principal
-function mostrarMenu(ctx: Context) {
-
-	const tituloMenu = "Que desas hacer";
-	const chatId = ctx.chat?.id;
-	if (chatId) {
-		bot.telegram.sendMessage(ctx.chat.id, tituloMenu, {
-			reply_markup: {
-				inline_keyboard: [
-					[
-						{ text: "Ver partidos disponibles", callback_data: 'verPartidos' },
-					],
-					[
-						{ text: "salir", callback_data: 'salir' }
-					]
-				]
-			}
-		})
-	} else {
-		console.error("No se pudo obtener el ID del chat.");
-	}
-}
-
+//Ver Partidos
 bot.action('verPartidos', async ctx => {
 
 	const currentDate = new Date();
-	const partidos: Partidos[] = (await axios.get(`${envs.URL_API}/partidos`)).data;
+	partidos = (await axios.get(`${envs.URL_API}/partidos`)).data;
 
 	// Filtrar los partidos cuya fecha sea mayor que la fecha actual
-	const partidosFuturos = partidos.filter(partido => new Date(partido.fecha) > currentDate);
+	const partidosFuturos: Partido[] = partidos.filter((partido: Partido) => new Date(partido.fecha) > currentDate);
 
 	if (partidosFuturos.length === 0) {
 		ctx.reply('No hay partidos disponibles.');
@@ -131,7 +101,7 @@ bot.action('verPartidos', async ctx => {
 	}
 
 	const inlineKeyboard = Markup.inlineKeyboard(
-		partidosFuturos.map(partido => {
+		partidosFuturos.map((partido: Partido) => {
 			const { id, fecha, lugar, hora } = partido;
 			const fechaPartido = new Date(fecha);
 			const diaSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -148,21 +118,37 @@ bot.action('verPartidos', async ctx => {
 	ctx.reply('Selecciona en que partido deseas inscribirte:', inlineKeyboard);
 });
 
+//Opciones del partido seleccionado
 bot.action(/^partido_(\d+)$/, async (ctx) => {
+
 	const partidoId = ctx.match![1];
+	let inlineKeyboard: InlineKeyboardMarkup;
 
 	// Aquí puedes utilizar el id del partido para realizar alguna acción
 	// Por ejemplo, buscar más detalles del partido en tu base de datos
-	const partido = (await axios.get(`${envs.URL_API}/partidos/${partidoId}`)).data;
+	partido = (await axios.get(`${envs.URL_API}/partidos/${partidoId}`)).data;
 
-	// Crear un teclado inline con las opciones "Registrarse" y "Cancelar"
-	const inlineKeyboard: InlineKeyboardMarkup = {
-		inline_keyboard: [
-			[{ text: "Registrarse", callback_data: `registrarse_${ctx.from!.id}_${partidoId}` }],
-			[{ text: "Cancelar Asistencia", callback_data: `cancelar_${ctx.from!.id}_${partidoId}` }],
-			[{ text: "Ver Lista Jugadores", callback_data: `lista_${ctx.from!.id}_${partidoId}` }],
-		]
-	};
+	if (Idtelegram != 646386747) {
+		// Crear un teclado inline con las opciones "Registrarse" y "Cancelar"
+		inlineKeyboard = {
+			inline_keyboard: [
+				[{ text: "Registrarse", callback_data: `registrarse_${ctx.from!.id}_${partidoId}` }],
+				[{ text: "Cancelar Asistencia", callback_data: `cancelar_${ctx.from!.id}_${partidoId}` }],
+				[{ text: "Ver Lista Jugadores", callback_data: `lista_${ctx.from!.id}_${partidoId}` }]
+			]
+		};
+	} else {
+		// Crear un teclado inline con las opciones "Registrarse" y "Cancelar"
+		inlineKeyboard = {
+			inline_keyboard: [
+				[{ text: "Registrarse", callback_data: `registrarse_${ctx.from!.id}_${partidoId}` }],
+				[{ text: "Cancelar Asistencia", callback_data: `cancelar_${ctx.from!.id}_${partidoId}` }],
+				[{ text: "Ver Lista Jugadores", callback_data: `lista_${ctx.from!.id}_${partidoId}` }],
+				[{ text: "Registrar Pago Jugador", callback_data: `registro_pago_${ctx.from!.id}_${partidoId}` }],
+			]
+		};
+	}
+
 
 	// Respondemos al usuario con los detalles del partido seleccionado y el teclado inline
 	await ctx.reply(`Has seleccionado el partido:
@@ -170,7 +156,6 @@ bot.action(/^partido_(\d+)$/, async (ctx) => {
         Lugar: ${partido.lugar}
         Hora: ${partido.hora}`, { reply_markup: inlineKeyboard });
 });
-
 
 bot.action(/^registrarse_(\d+)_(\d+)$/, async (ctx: any) => {
 
@@ -235,7 +220,7 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 	------------------------\n`;
 	listadoJugadores.forEach((jugador: any, i: number) => {
 		(i < 27)
-		? mensaje += `${i + 1}. ${jugador.nombre_corto} ${ jugador.socio || jugador.estado_pago ? '*X*': '*Debe*'}  \n`
+			? mensaje += `${i + 1}. ${jugador.nombre_corto} ${jugador.socio || jugador.estado_pago ? '*X*' : '*Debe*'}  \n`
 			: mensaje += `------------------------
 		*reserva*
 		${i + 1}. ${jugador.nombre_corto}\n`;
@@ -253,7 +238,7 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 bot.action(/^registro_pago_(\d+)_(\d+)$/, async (ctx: any) => {
 
 	const partidoId = ctx.match[2];
-	
+
 	const listadoJugadores = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadores_idpartido/${partidoId}`)).data;
 
 	const inlineKeyboard = {
@@ -296,10 +281,10 @@ bot.action(/^registrar_pago_(\d+)_(\d+)$/, async (ctx: any) => {
 	const partidoId = ctx.match[2];
 	const jugadorId = ctx.match[1];
 
-	const {id} = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadore_idjugador_idpartido/${jugadorId}/${partidoId}`)).data
+	const { id } = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadore_idjugador_idpartido/${jugadorId}/${partidoId}`)).data
 
 	try {
-		await axios.put(`${envs.URL_API}/partido_jugadores/${id}`,{"estado_pago":true})
+		await axios.put(`${envs.URL_API}/partido_jugadores/${id}`, { "estado_pago": true })
 		ctx.reply("El pago ha sido registrado con exito")
 	} catch (error) {
 		await ctx.reply("Hubo un error al registrar el pago")
@@ -312,10 +297,10 @@ bot.action(/^cancelar_pago_(\d+)_(\d+)$/, async (ctx: any) => {
 	const partidoId = ctx.match[2];
 	const jugadorId = ctx.match[1];
 
-	const {id} = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadore_idjugador_idpartido/${jugadorId}/${partidoId}`)).data
+	const { id } = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadore_idjugador_idpartido/${jugadorId}/${partidoId}`)).data
 
 	try {
-		await axios.put(`${envs.URL_API}/partido_jugadores/${id}`,{"estado_pago":false})
+		await axios.put(`${envs.URL_API}/partido_jugadores/${id}`, { "estado_pago": false })
 		ctx.reply("El pago ha sido cancelado con exito")
 	} catch (error) {
 		await ctx.reply("Hubo un error al cancelar el pago")
@@ -326,8 +311,6 @@ bot.action(/^cancelar_pago_(\d+)_(\d+)$/, async (ctx: any) => {
 bot.action('salir', ctx => {
 	ctx.reply('Hasta luego!', Markup.removeKeyboard());
 });
-
-
 
 // Manejador de errores
 bot.catch((err: unknown, ctx: Context) => {
