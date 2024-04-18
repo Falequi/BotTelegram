@@ -10,6 +10,7 @@ interface Partido {
 	lugar: string,
 	hora: string
 }
+
 interface Jugador {
 	id: number,
 	nombres: string,
@@ -54,7 +55,9 @@ bot.command('start', async (ctx) => {
 
 });
 
+// Identificando al usuario por primera vez
 if (!jugador) {
+	
 	// Manejador de eventos de texto
 	bot.on('text', async (ctx) => {
 
@@ -83,8 +86,6 @@ if (!jugador) {
 		}
 	});
 }
-
-
 
 //Ver Partidos
 bot.action('verPartidos', async ctx => {
@@ -227,7 +228,7 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 	});
 
 	mensaje += `------------------------\n
-	🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\nSe debe cancelar $18.000. \n🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\nBancolombia\n*Número de Cuenta\n7568741624\nAhorros\nFabio Alejandro Quintero\nCédula 4.375.857*\n*Nequi*\nPSE Nequi: https://recarga.nequi.com.co\nTeléfono: 3188216823
+	🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\nSe debe cancelar $18.000. \n🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\nBancolombia\n*Número de Cuenta\n75687416244\nAhorros\nFabio Alejandro Quintero\nCédula 4.375.857*\n*Nequi*\nPSE Nequi: https://recarga.nequi.com.co\nTeléfono: 3188216823
 	---------------------------`
 
 	// Enviar el mensaje como respuesta
