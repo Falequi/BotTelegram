@@ -221,14 +221,14 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 	------------------------\n`;
 	listadoJugadores.forEach((jugador: any, i: number) => {
 		(i < 27)
-			? mensaje += `${i + 1}. ${jugador.nombre_corto} ${jugador.socio || jugador.estado_pago ? '*X*' : '*Debe*'}  \n`
+			? mensaje += `${i + 1}. ${jugador.nombre_corto} ${jugador.socio || jugador.estado_pago ? '*X*' : '*-->Debe<--*'}  \n`
 			: mensaje += `------------------------
 		*reserva*
 		${i + 1}. ${jugador.nombre_corto}\n`;
 	});
 
 	mensaje += `------------------------\n
-	🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\n Se debe cancelar $18.000. El dia que le indique el administrador \n🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\nBancolombia\n*Número de Cuenta\n75687416244\nAhorros\nFabio Alejandro Quintero\nCédula 4.375.857*\n*Nequi*\nPSE Nequi: https://recarga.nequi.com.co\nTeléfono: 3188216823
+	🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\nSe debe cancelar $15.000. Plazo para el pago hasta el Miercoles a las 8 pm \n🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴🔴\nBancolombia\n*Número de Cuenta\n75687416244\nAhorros\nFabio Alejandro Quintero\nCédula 4.375.857*\n*Nequi*\nPSE Nequi: https://recarga.nequi.com.co\nTeléfono: 3188216823
 	---------------------------`
 
 	// Enviar el mensaje como respuesta
