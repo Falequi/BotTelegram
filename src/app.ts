@@ -219,7 +219,7 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 	*Lugar ${partido.lugar}*
 	*Lugar ${partido.hora}*
 	------------------------\n`;
-	listadoJugadores.forEach((jugador: any, i: number) => {
+	listadoJugadores.jugadores.forEach((jugador: any, i: number) => {
 		(i < 27)
 			? mensaje += `${i + 1}. ${jugador.nombre_corto} ${jugador.socio || jugador.estado_pago ? '*X*' : '*-->Debe<--*'}  \n`
 			: mensaje += `------------------------
