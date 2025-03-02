@@ -238,12 +238,13 @@ bot.action(/^lista_(\d+)_(\d+)$/, async (ctx: any) => {
 
 bot.action(/^registro_pago_(\d+)_(\d+)$/, async (ctx: any) => {
 
+	
 	const partidoId = ctx.match[2];
-
+	
 	const listadoJugadores = (await axios.get(`${envs.URL_API}/partido_jugadores/partidojugadores_idpartido/${partidoId}`)).data;
-
+	
 	const inlineKeyboard = {
-		inline_keyboard: listadoJugadores
+		inline_keyboard: listadoJugadores.jugadores
 			.filter((jugador: any) => jugador.socio === false && jugador.estado_pago === false)
 			.map((jugador: any) => [
 				{
@@ -254,6 +255,7 @@ bot.action(/^registro_pago_(\d+)_(\d+)$/, async (ctx: any) => {
 	};
 
 	const menu = JSON.stringify(inlineKeyboard);
+	console.log(menu)
 	// const menujson = JSON.parse(menu)
 	//Crear un teclado inline con las opciones "Registrarse" y "Cancelar"
 
@@ -262,6 +264,7 @@ bot.action(/^registro_pago_(\d+)_(\d+)$/, async (ctx: any) => {
 
 bot.action(/^gestion_pago_(\d+)_(\d+)$/, async (ctx: any) => {
 
+	
 	const partidoId = ctx.match[2];
 	const jugadorId = ctx.match[1];
 
